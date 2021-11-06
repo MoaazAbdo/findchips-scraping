@@ -125,7 +125,7 @@ for indx2 in range(len(parts_input)):
             driver.quit()
     except:
         print("Time Out")
-        with open("E:\python//data.csv","w", encoding="UTF-8", newline='') as myFile:
+        with open("E:\python//blocked.csv","w", encoding="UTF-8", newline='') as myFile:
             wr = csv.writer(myFile)
             wr.writerow(["PartNumber"])
             wr.writerows(parts_input[indx2])
