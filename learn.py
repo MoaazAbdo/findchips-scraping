@@ -1,5 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
+import csv
+from itertools import zip_longest
+
+
 
 def data_grabber(url):
 
@@ -33,7 +37,9 @@ def get_items(item):
 	DistributorsList = []
 
 	page 			 = item[0]
-	Partial 		 = item[1]
+	UrlPartial 		 = item[1]
+	Partial 		 = UrlPartial.replace("https://www.findchips.com/search/", "").replace("?currency=USD", "")
+	#print(Partial)
 	notfound = page.find("p",{"class":"no-results"})
 
 	header = ["Partial", "Distributor", "Part Number", "SKU", "Price"]
@@ -45,15 +51,16 @@ def get_items(item):
 		SkuList.append("Not Found") 
 		PricingList.append("Not Found")
 		DistributorsList.append("Not Found")
+		
+		fileList = [PartialList, DistributorsList, PartsList, SkuList, PricingList]
+		exported = zip_longest(*fileList)
+			
+		with open("E:\python//findchips.csv","a",encoding="UTF-8", newline='') as f:
+			wr = csv.writer(f)
+			wr.writerows(exported)
 
-		with open("E:\python//result.txt","a") as f:
-			for h in header:
-				f.write(f'{h}\t')
-
-		with open("E:\python//result.txt","a") as f:
-			f.write(f'\n')
-			for i,j,k,l,m in zip(PartialList, DistributorsList, PartsList, SkuList, PricingList):
-				f.write(f'{i}\t{j}\t{k}\t{l}\t{m}\n')
+		#print(Partial, " Done")
+		
 
 
 
@@ -63,132 +70,107 @@ def get_items(item):
 		distributors = page.find_all("div",{"class": "distributor-results"})
 		
 		for i in range(len(distributors)):
-			#distributor_name = distributors[i].find("h3",{"class":"distributor-title"}).text.strip()
 			dist_name = distributors[i].find("h3",{"class":"distributor-title"}).text.strip()
-			#print(distributors[i].find("h3",{"class":"distributor-title"}).text.strip())
-			#print(dist_name)
 			tb = distributors[i].find("table")
 			rows = tb.find("tbody").find_all("tr")
 			for x in range(len(rows)):
-				# PartNumber
-				"""
-				try:
-
-					print("PartNumber = ",rows[x].find("td",{"class":"td-part"}).a.text.strip())
-				except:
-					print("PartNumber = ","No Part Number")
-				#Sku
-				try:
-					print("SKU = ", rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #",""))
-				except:
-					print("SKU = ", "no sku")
-				"""
-
-				#Pricing
+				
 				try:
 					if len(rows[x].find("td",{"class":"td-price"}).text) == 49:
 						PartialList.append(Partial)
 						DistributorsList.append(dist_name)
-						print(dist_name)
+						#print(dist_name)
 						#PartNumber If Price IS Empty
 						try:
 							partNumber = rows[x].find("td",{"class":"td-part"}).a.text.strip()
-							#print("PartNumber = ",rows[x].find("td",{"class":"td-part"}).a.text.strip())
-							print("PartNumber = ", partNumber)
+							#print("PartNumber = ", partNumber)
 							PartsList.append(partNumber)
 						except:
 							partNumber = "No PartNumber"
-							print("PartNumber = ",partNumber)
+							#print("PartNumber = ",partNumber)
 							PartsList.append(partNumber)
 						#SKU If Price Is Empty
 						try:
 							sku = rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #","")
-							print("SKU = ", sku)
+							#print("SKU = ", sku)
 							SkuList.append(sku)
-							#print("SKU = ", rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #",""))
 						except:
 							sku = "No Sku"
-							print("SKU = ", sku)
+							#print("SKU = ", sku)
 							SkuList.append(sku)
 						
-						print("Pricing: Empty")
+						#print("Pricing: Empty")
 						PricingList.append("No Price")
 
-						with open("E:\python//result.txt","a") as f:
-							for h in header:
-								f.write(f'{h}\t')
-
-						with open("E:\python//result.txt","a") as f:
-							f.write(f'\n')
-							for i,j,k,l,m in zip(PartialList, DistributorsList, PartsList, SkuList, PricingList):
-								f.write(f'{i}\t{j}\t{k}\t{l}\t{m}\n')
 
 
- 	
+						
 					else:
 						
 						all_pricing = rows[x].find("td",{"class":"td-price"}).find("ul", {"class": "price-list"}).find_all("li")
 						for y in range(len(all_pricing)):
 							if all_pricing[y].text != 'See More':
-								print(dist_name)
+								#print(dist_name)
 								PartialList.append(Partial)
 								DistributorsList.append(dist_name)
 								# PartNumber Repeat With Every Row In Price
 								try:
 									partNumber = rows[x].find("td",{"class":"td-part"}).a.text.strip()
-									#print("PartNumber = ",rows[x].find("td",{"class":"td-part"}).a.text.strip())
-									print("PartNumber = ",partNumber)
+									#print("PartNumber = ",partNumber)
 									PartsList.append(partNumber)
 								except:
 									partNumber = "No Part Number"
-									print("PartNumber = ",partNumber)
+									#print("PartNumber = ",partNumber)
 									PartsList.append(partNumber)
 								#SKU Repeat With Every Row In Price
 								try:
 									sku = rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #","")
-									#print("SKU = ", rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #",""))
-									print("SKU = ", sku)
+									#print("SKU = ", sku)
 									SkuList.append(sku)
 								except:
 									sku = "No Sku"
-									print("SKU = ", sku)
+									#print("SKU = ", sku)
 									SkuList.append(sku)
 								# Price Row
 								price = all_pricing[y].text	
-								print(price)
+								#print(price)
 								PricingList.append(price)
-								#print(all_pricing[y].text)
-
-						with open("E:\python//result.txt","a") as f:
-							for h in header:
-								f.write(f'{h}\t')
-
-						with open("E:\python//result.txt","a") as f:
-							f.write(f'\n')
-							for i,j,k,l,m in zip(PartialList, DistributorsList, PartsList, SkuList, PricingList):
-								f.write(f'{i}\t{j}\t{k}\t{l}\t{m}\n')
-
+								
+						
 					
-				
-				
-					print("Done")					
-
-					#print("Pricing = ", len(rows[x].find("td",{"class":"td-price"}).text))
-					#print("Pricing = ", rows[x].find("td",{"class":"td-price"}).text)
+					#print(Partial, " Done")					
+					
 				except:
 					print("Pricing: No Price")
 
 
+		fileList = [PartialList, DistributorsList, PartsList, SkuList, PricingList]
+		exported = zip_longest(*fileList)
+
+		with open("E:\python//findchips.csv","a",encoding="UTF-8", newline='') as f:
+			wr = csv.writer(f)
+			wr.writerows(exported)
+
+	print(Partial, " Done")
 		
 
-#get_items(data_grabber("https://www.findchips.com/search/LM317LBD"))
-#get_items(data_grabber("https://www.findchips.com/search/Moaaz"))
 
 
-input_list = ["https://www.findchips.com/search/LM317LBD", "https://www.findchips.com/search/NTE248"]
+
+		
+#LM317LBD = 82, NTE248 = 24
+
+input_list = ["https://www.findchips.com/search/LM317LBD?currency=USD", 
+			  "https://www.findchips.com/search/NTE248?currency=USD",
+			  "https://www.findchips.com/search/moaaz?currency=USD"]
+
+#input_list = ["https://www.findchips.com/search/LM317LBD?currency=USD", "https://www.findchips.com/search/moaaz?currency=USD"]
+with open("E:\python//findchips.csv","w",encoding="UTF-8", newline='') as f:
+	wr = csv.writer(f)
+	wr.writerow(["Partial", "Distributor", "Part Number", "SKU", "Price"])
+	
 for i in input_list:
 	get_items(data_grabber(i))
-
 
 
 
