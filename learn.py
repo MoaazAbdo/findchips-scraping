@@ -9,7 +9,7 @@ def data_grabber(url):
 
 	try:
 
-		page = requests.get(url, timeout=5)
+		page = requests.get(url, timeout=0.000001)
 		if page.status_code == 200:
 			html = page.text
 			soup = BeautifulSoup(html,'html.parser')
@@ -35,6 +35,9 @@ def get_items(item):
 	SkuList 		 = [] 
 	PricingList		 = []
 	DistributorsList = []
+	MfrList			 = []
+	DescriptionList  = []
+	StockList	     = []
 
 	page 			 = item[0]
 	UrlPartial 		 = item[1]
@@ -51,18 +54,16 @@ def get_items(item):
 		SkuList.append("Not Found") 
 		PricingList.append("Not Found")
 		DistributorsList.append("Not Found")
+		MfrList.append("NotFound")
+		DescriptionList.append("Not Found")
+		StockList.append("Not Found")
 		
-		fileList = [PartialList, DistributorsList, PartsList, SkuList, PricingList]
+		fileList = [PartialList, DistributorsList, PartsList, SkuList, MfrList, DescriptionList, StockList, PricingList]
 		exported = zip_longest(*fileList)
 			
 		with open("E:\python//findchips.csv","a",encoding="UTF-8", newline='') as f:
 			wr = csv.writer(f)
 			wr.writerows(exported)
-
-		#print(Partial, " Done")
-		
-
-
 
 	else:
 
@@ -79,72 +80,106 @@ def get_items(item):
 					if len(rows[x].find("td",{"class":"td-price"}).text) == 49:
 						PartialList.append(Partial)
 						DistributorsList.append(dist_name)
-						#print(dist_name)
 						#PartNumber If Price IS Empty
 						try:
 							partNumber = rows[x].find("td",{"class":"td-part"}).a.text.strip()
-							#print("PartNumber = ", partNumber)
 							PartsList.append(partNumber)
 						except:
 							partNumber = "No PartNumber"
-							#print("PartNumber = ",partNumber)
 							PartsList.append(partNumber)
 						#SKU If Price Is Empty
 						try:
 							sku = rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #","")
-							#print("SKU = ", sku)
 							SkuList.append(sku)
 						except:
 							sku = "No Sku"
-							#print("SKU = ", sku)
 							SkuList.append(sku)
 						
-						#print("Pricing: Empty")
+						#MFR If Price Is Empty
+						try:
+							mfr = rows[x].find("td",{"class":"td-mfg"}).span.text.strip()
+							MfrList.append(mfr)
+						except:
+							mfr = "No Mfr"
+							MfrList.append(mfr)
+
+						#Description If Price IS Empty
+						try:
+							descrition = rows[x].find("td",{"class":"td-desc"}).span.text.strip()
+							DescriptionList.append(descrition)
+						except:
+							descrition = "No Descrition"
+							DescriptionList.append(descrition)
+
+						#Stock If Price IS Empty
+						try:
+							stock = rows[x].find("td",{"class":"td-stock"}).span.text.strip()
+							StockList.append(stock)
+						except:
+							stock = "No Stock"
+							StockList.append(stock)
+
+						#Price
 						PricingList.append("No Price")
 
-
-
-						
 					else:
 						
 						all_pricing = rows[x].find("td",{"class":"td-price"}).find("ul", {"class": "price-list"}).find_all("li")
 						for y in range(len(all_pricing)):
 							if all_pricing[y].text != 'See More':
-								#print(dist_name)
 								PartialList.append(Partial)
 								DistributorsList.append(dist_name)
 								# PartNumber Repeat With Every Row In Price
 								try:
 									partNumber = rows[x].find("td",{"class":"td-part"}).a.text.strip()
-									#print("PartNumber = ",partNumber)
 									PartsList.append(partNumber)
 								except:
 									partNumber = "No Part Number"
-									#print("PartNumber = ",partNumber)
 									PartsList.append(partNumber)
 								#SKU Repeat With Every Row In Price
 								try:
 									sku = rows[x].find("td",{"class":"td-part"}).span.text.strip().replace("\n","").replace("DISTI #","")
-									#print("SKU = ", sku)
 									SkuList.append(sku)
 								except:
 									sku = "No Sku"
-									#print("SKU = ", sku)
 									SkuList.append(sku)
 								# Price Row
 								price = all_pricing[y].text	
-								#print(price)
+
+								#MFR Repeat With Every Row In Price
+								try:
+									mfr = rows[x].find("td",{"class":"td-mfg"}).span.text.strip()
+									MfrList.append(mfr)
+								except:
+									mfr = "No Mfr"
+									MfrList.append(mfr)
+
+
+								#Description Repeat With Every Row In Price
+								try:
+									descrition = rows[x].find("td",{"class":"td-desc"}).span.text.strip()
+									DescriptionList.append(descrition)
+								except:
+									descrition = "No Descrition"
+									DescriptionList.append(descrition)
+
+								#Stock Repeat With Every Row In Price
+								try:
+									stock = rows[x].find("td",{"class":"td-stock"}).span.text.strip()
+									StockList.append(stock)
+								except:
+									stock = "No Stock"
+									StockList.append(stock)
+
+
+								#All Price Rows
 								PricingList.append(price)
 								
-						
-					
-					#print(Partial, " Done")					
-					
 				except:
 					print("Pricing: No Price")
 
 
-		fileList = [PartialList, DistributorsList, PartsList, SkuList, PricingList]
+		fileList = [PartialList, DistributorsList, PartsList, SkuList, MfrList, DescriptionList,PricingList]
 		exported = zip_longest(*fileList)
 
 		with open("E:\python//findchips.csv","a",encoding="UTF-8", newline='') as f:
@@ -158,19 +193,27 @@ def get_items(item):
 
 
 		
-#LM317LBD = 82, NTE248 = 24
+#LM317LBD = 82, NTE248 = 24 BT151X-800R/DG,127
+
+
+"""
+replace / >> %2F .. , >> %2C ..  
+
+"""
 
 input_list = ["https://www.findchips.com/search/LM317LBD?currency=USD", 
 			  "https://www.findchips.com/search/NTE248?currency=USD",
-			  "https://www.findchips.com/search/moaaz?currency=USD"]
+			  "https://www.findchips.com/search/moaaz?currency=USD",
+			  "https://www.findchips.com/search/BT151X-800R/DG,127?currency=USD",
+			  "https://www.findchips.com/search/BT151X-800R%2fDG%2c127?currency=USD"
+			  ]
 
-#input_list = ["https://www.findchips.com/search/LM317LBD?currency=USD", "https://www.findchips.com/search/moaaz?currency=USD"]
+
 with open("E:\python//findchips.csv","w",encoding="UTF-8", newline='') as f:
 	wr = csv.writer(f)
-	wr.writerow(["Partial", "Distributor", "Part Number", "SKU", "Price"])
+	wr.writerow(["Partial", "Distributor", "Part Number", "SKU", "MFR", "Description", "Price"])
 	
 for i in input_list:
 	get_items(data_grabber(i))
-
 
 
