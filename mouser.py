@@ -44,7 +44,7 @@ for i in range(len(rows)):
         mfr = "NO MFR"
 
     try:
-        datasheet = rows[i].find("td", {"class": "column hide-xsmall"}).find("a", {"class": "text-nowrap"}).get['href']
+        datasheet = rows[i].find("td", {"class": "column hide-xsmall"}).find("a", {"class": "text-nowrap"})['href']
         print("datasheet =", datasheet)
     except:
         datasheet = "No DataSheet"
